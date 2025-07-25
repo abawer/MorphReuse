@@ -55,3 +55,6 @@ Device: cpu
 
 5) SST2 (Text dataset for Headless Pretrained LLM)
 
+<img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/c3aa3bc1-6357-4175-8085-389edc6dddab" />
+
+
