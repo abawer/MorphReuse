@@ -51,6 +51,18 @@ class MorphReuseCore(nn.Module):
       transformed = self.net(x)
       scale = torch.sigmoid(self.scale_param) * 2  # 0-2 range
       return x + scale * transformed
+
+class MorphReuseAdapter(nn.Module):
+    def __init__(self, in_dim, out_dim, shared_core):
+        super().__init__()
+        self.core = shared_core
+        bottleneck = shared_core.net[0].in_features
+        self.in_proj = nn.Linear(in_dim, bottleneck, bias=False)
+        self.out_proj = nn.Linear(bottleneck, out_dim, bias=False)
+        nn.init.xavier_uniform_(self.in_proj.weight)
+        nn.init.xavier_uniform_(self.out_proj.weight)
+    def forward(self, x):
+        return self.out_proj(self.core(self.in_proj(x)))
 ```
 
 **Baseline**  
