@@ -2,7 +2,7 @@
 
 **Shaped Weight Sharing with Per-Layer Scaling for Lighter Computational Networks**  
 
-[DOI Placeholder – Zenodo Link Here](https://zenodo.org)
+[![DOI](https://zenodo.org/badge/1026159354.svg)](https://doi.org/10.5281/zenodo.16424639)
 
 
 ## Overview
@@ -10,9 +10,9 @@
 
 This repository explores **MorphReuse**, an efficient parameter-sharing technique that replaces network layers with a shared trainable core and per-layer scaling adapters. Key features:
 
-- **Shared Core MLP**: Central trainable transformation module
+- **Shared Core MLP** / **Shared Weights by layer Shape**: Central trainable transformation module (for Image classification nets/ Text LLM).
 - **Per-Layer Scaling**: Learnable scaling factors for layer-specific adaptation
-- **Residual Connections**: Identity + scaled transformation for stable training
+- **Residual Connections**: Identity + scaled transformation for stable training (for Shared MLP Core).
 - **CPU-Optimized**: Designed for accessible experimentation on standard hardware
 
 Benchmarked across vision and text tasks:
