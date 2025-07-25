@@ -94,6 +94,42 @@ Same MLP as above on top of a Convolutional Backbone net for feature extraction.
 | **LoRA**     | Pretrained TinyBERT+Low-Rank Adapters for three top layer  | LoRA residual weights|
 
 
+**Key Implementation**:
+```python
+
+# Simplified MorphReuse wrapper for shared weights
+class MorphReuseLinearWrapperShared(nn.Module):
+    def __init__(self, fin, fout):
+        super().__init__()
+        self.core = nn.GELU()
+        self.shared_w = SharedWeight(fin, fout) # Use SharedWeight
+
+    def forward(self, x):
+        return self.core(self.shared_w(x))
+
+class SharedWeight(nn.Module):
+    """
+    Singleton storage for one (weight, bias) pair per unique shape.
+    """
+    _cache = {}          # key=(in_f, out_f)  ->  nn.ParameterDict
+    _usage = {}
+
+    def __init__(self, in_f: int, out_f: int):
+        super().__init__()
+        key = (in_f, out_f)
+        if key not in self._cache:               # create once
+            w = nn.Parameter(torch.empty(out_f, in_f))
+            nn.init.xavier_uniform_(w)
+            b = nn.Parameter(torch.zeros(out_f))
+            self._cache[key] = nn.ParameterDict({"sweight": w, "sbias": b})
+        self.params = self._cache[key]           # shared reference
+        self._usage[key] = self._usage.get(key, 0) + 1
+        self.scale = nn.Parameter(torch.ones(1))   # per-layer
+
+    def forward(self, x):
+        return self.scale * Fn.linear(x, self.params["sweight"], self.params["sbias"])
+```
+
 **Baseline**  
 - Uses `huawei-noah/TinyBERT_General_4L_312D`.  
 - Unfreezes top 2 transformer encoder layers + classifier head.  
