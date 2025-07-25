@@ -1,5 +1,5 @@
 # MorphReuse
-MorphReuse: Shape-Level Weight Sharing with Per-Layer Scaling for Lightweight tuning
+MorphReuse: Shape-Level Weight Sharing with Per-Layer Scaling for lighter tuning
 
 1) Image classification nets
 
