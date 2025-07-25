@@ -122,4 +122,3 @@ Device: cpu
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for full text.
-If you want, I can also generate a raw .md file you can download or preview in your repo. Would you like that?
