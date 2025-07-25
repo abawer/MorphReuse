@@ -48,10 +48,9 @@ class MorphReuseCore(nn.Module):
         self.scale_param = nn.Parameter(torch.tensor([-3.0]))  # α-residual control
 
     def forward(self, x):
-        identity = x
-        transformed = self.net(x)
-        scale = torch.sigmoid(self.scale_param) * 2  # [0,2] range
-        return identity + scale * transformed
+      transformed = self.net(x)
+      scale = torch.sigmoid(self.scale_param) * 2  # 0-2 range
+      return x + scale * transformed
 ```
 
 **Baseline**  
