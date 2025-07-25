@@ -1,6 +1,9 @@
 # Copyright 2025 Amit Bawer
 # Licensed under the Apache License, Version 2.0
-# http://www.apache.org/licenses/LICENSE-2.0 
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# GitHub: https://github.com/abawer/morphreuse
+# Maintained by: Amit Bawer (https://github.com/abawer)
 
 
 # ========================================================
@@ -46,16 +49,16 @@ print(f"Using device: {DEVICE}")
 # Vision / Global Consts
 WIDTH = 512
 MORPH_REUSE_DIM = 128
-MORPH_REUSE_EXPAND = 2
+MORPH_REUSE_EXPAND = 2.5
 EPOCHS = 5
 BATCH_SIZE = 128
-LR_BASELINE = 1e-3
-LR_MORPH_REUSE = 1e-3
+LR_VISION=1e-3
 # LLM Consts
 PRETRAINED_NAME = "huawei-noah/TinyBERT_General_4L_312D"
 LLM_SEQ_LEN = 64
 MAX_SAMPLES = 1000
 BATCH_SIZE_LM = 32
+LR_LM=1e-3
 # =======================================================
 
 print("========= Configuration ==========")
@@ -133,39 +136,39 @@ DATASETS = {
 
 # ================== MODEL DEFINITIONS ==================
 class MorphReuseCore(nn.Module):
-    def __init__(self, in_dim=MORPH_REUSE_DIM, expand=MORPH_REUSE_EXPAND, out_dim=None):
-        super().__init__()
-        out_dim = out_dim or in_dim
-        hidden = int(in_dim * expand)
-        self.net = nn.Sequential(
-            nn.Linear(in_dim, hidden),
-            nn.GELU(),
-            nn.Linear(hidden, out_dim)
-        )
-        # Learnable scaling factor for adapter output
-        self._gain_logit = nn.Parameter(torch.tensor(0.0))
-        # Initialize with smaller weights
-        for layer in [0, 2]:
-            nn.init.xavier_uniform_(self.net[layer].weight)
-            if self.net[layer].bias is not None:
-                nn.init.zeros_(self.net[layer].bias)
-    @property
-    def gain(self):
-        return torch.sigmoid(self._gain_logit)
+    def __init__(self, dim=MORPH_REUSE_DIM, expand=MORPH_REUSE_EXPAND):
+      super().__init__()
+      hidden = int(dim * expand)
+      self.net = nn.Sequential(
+        nn.Linear(dim, hidden),
+        nn.LayerNorm(hidden),
+        nn.GELU(),
+        nn.Linear(hidden, dim)
+      )
+      # Initialize to near-zero transformation
+      for layer in [0, 3]:
+        nn.init.normal_(self.net[layer].weight, std=0.02)
+        nn.init.zeros_(self.net[layer].bias)
+
+      # Residual scaling (initialized to -3 → sigmoid(-3)≈0)
+      self.scale_param = nn.Parameter(torch.tensor([-3.0]))
+
     def forward(self, x):
-        return ((1.0-self.gain) * x) + (self.gain * self.net(x))
+      transformed = self.net(x)
+      scale = torch.sigmoid(self.scale_param) * 2  # 0-2 range
+      return x + scale * transformed
+
     def unfreeze(self):
-        for p in self.parameters():
-            p.requires_grad = True
+      for p in self.parameters():
+        p.requires_grad = True
 
 class MorphReuseAdapter(nn.Module):
     def __init__(self, in_dim, out_dim, shared_core):
         super().__init__()
         self.core = shared_core
-        bottleneck_in = shared_core.net[0].in_features
-        bottleneck_out = shared_core.net[2].out_features
-        self.in_proj = nn.Linear(in_dim, bottleneck_in, bias=False)
-        self.out_proj = nn.Linear(bottleneck_out, out_dim, bias=False)
+        bottleneck = shared_core.net[0].in_features
+        self.in_proj = nn.Linear(in_dim, bottleneck, bias=False)
+        self.out_proj = nn.Linear(bottleneck, out_dim, bias=False)
         nn.init.xavier_uniform_(self.in_proj.weight)
         nn.init.xavier_uniform_(self.out_proj.weight)
     def forward(self, x):
@@ -173,14 +176,13 @@ class MorphReuseAdapter(nn.Module):
 
 # Simplified MorphReuse wrapper for shared weights
 class MorphReuseLinearWrapperShared(nn.Module):
-    """Shared bottleneck adapter with residual connection using SharedWeight"""
     def __init__(self, fin, fout):
         super().__init__()
-        self.core = nn.Identity() # Placeholder for potential core logic if needed differently
-        self.w = SharedWeight(fin, fout) # Use SharedWeight
+        self.core = nn.GELU()
+        self.shared_w = SharedWeight(fin, fout) # Use SharedWeight
 
     def forward(self, x):
-        return self.core(self.w(x)) # Apply shared weight, then identity core
+        return self.core(self.shared_w(x))
 
 class SharedWeight(nn.Module):
     """
@@ -200,7 +202,6 @@ class SharedWeight(nn.Module):
         self.params = self._cache[key]           # shared reference
         self._usage[key] = self._usage.get(key, 0) + 1
         self.scale = nn.Parameter(torch.ones(1))   # per-layer
-        #self.scale = 1
 
     def forward(self, x):
         return self.scale * Fn.linear(x, self.params["sweight"], self.params["sbias"])
@@ -526,10 +527,16 @@ def build_llm_morph_reuse():
 
     # 2. Wrap the chosen layers with TMM adapters (unchanged)
     SharedWeight.reset()
-    def wrap_layer(layer):
-        in_feat = layer.in_features
-        out_feat = layer.out_features
-        return MorphReuseLinearWrapperShared(in_feat, out_feat)
+    def wrap_layer(original):
+        wrapper = MorphReuseLinearWrapperShared(
+            original.in_features, 
+            original.out_features
+        )
+        # Copy critical BERT attributes
+        for attr in ["num_attention_heads", "attention_head_size", "all_head_size"]:
+            if hasattr(original, attr):
+                setattr(wrapper, attr, getattr(original, attr))
+        return wrapper
 
     # ---------- BERT path ----------
     for layer in model.bert.encoder.layer[-2:]:       # last two layers
@@ -691,8 +698,10 @@ def run_experiment(name):
     # Load dataset
     train_loader, test_loader, in_shape, n_classes = load_dataset(name)
 
+    lr = LR_VISION
     # Build models
     if name == 'sst2':
+        lr = LR_LM
         print("Building LLM Baseline...")
         baseline = build_llm_baseline()
         print("Building LLM MorphReuse...")
@@ -723,15 +732,15 @@ def run_experiment(name):
     # Train models
     print("\nTraining Baseline:")
     b_train_acc, b_test_acc, b_fwd, b_bwd, b_upd = train(
-        baseline, train_loader, test_loader, LR_BASELINE, f"{name}-Baseline")
+        baseline, train_loader, test_loader, lr, f"{name}-Baseline")
 
     print("\nTraining MorphReuse:")
     mr_train_acc, mr_test_acc, mr_fwd, mr_bwd, mr_upd = train(
-        morph_reuse_model, train_loader, test_loader, LR_MORPH_REUSE, f"{name}-MorphReuse")
+        morph_reuse_model, train_loader, test_loader, lr, f"{name}-MorphReuse")
 
     print("\nTraining LoRA:")
     l_train_acc, l_test_acc, l_fwd, l_bwd, l_upd = train(
-        lora_model, train_loader, test_loader, LR_MORPH_REUSE, f"{name}-LoRA") # Using MorphReuse LR for LoRA too
+        lora_model, train_loader, test_loader, lr, f"{name}-LoRA") 
 
     # Get final memory stats
     mem_base = get_memory_stats(baseline)
@@ -745,12 +754,12 @@ def run_experiment(name):
 
     # 1. Main metric (Accuracy)
     plt.subplot(2, 2, 1)
-    plt.plot(epochs, b_train_acc, 'o--', label='Baseline (train)', color='#1f77b4', linewidth=2.5)
-    plt.plot(epochs, b_test_acc, 'o-',  label='Baseline (test)',  color='#aec7e8', linewidth=1.8)
-    plt.plot(epochs, mr_train_acc,  's--', label='MorphReuse (train)',      color='#ff7f0e', linewidth=2.5)
-    plt.plot(epochs, mr_test_acc,  's-',  label='MorphReuse (test)',       color='#ffbb78', linewidth=1.8)
-    plt.plot(epochs, l_train_acc, 'd--', label='LoRA (train)',     color='#9467bd', linewidth=2.5)
-    plt.plot(epochs, l_test_acc, 'd-',  label='LoRA (test)',      color='#c5b0d5', linewidth=1.8)
+    plt.plot(epochs, b_train_acc, 'o--', label='Baseline (train)', color='#aec7e8', linewidth=1.7)
+    plt.plot(epochs, b_test_acc, 'o-',  label='Baseline (test)',  color='#1f77b4', linewidth=2.5)
+    plt.plot(epochs, mr_train_acc,  's--', label='MorphReuse (train)', color='#ffbb78', linewidth=1.7)
+    plt.plot(epochs, mr_test_acc,  's-',  label='MorphReuse (test)',  color='#ff7f0e', linewidth=2.5)
+    plt.plot(epochs, l_train_acc, 'd--', label='LoRA (train)', color='#c5b0d5', linewidth=1.7)
+    plt.plot(epochs, l_test_acc, 'd-',  label='LoRA (test)', color='#9467bd', linewidth=2.5)
     plt.title("Accuracy Progression")
     plt.xlabel("Epochs")
     plt.ylabel("Accuracy (%)")
@@ -839,7 +848,7 @@ def run_experiment(name):
 # ================== MAIN EXECUTION ==================
 if __name__ == "__main__":
     # Run experiments on all datasets
-    datasets = ['MNIST', 'FashionMNIST', 'CIFAR10', 'sst2'] # Enable all datasets
+    datasets = ['sst2', 'MNIST', 'FashionMNIST', 'CIFAR10']
     for dataset in datasets:
         try:
             run_experiment(dataset)
