@@ -8,7 +8,7 @@
 ## Overview
 
 
-This repository explores **MorphReuse**, an efficient parameter-sharing technique that replaces conventional network layers with a shared trainable core and per-layer scaling adapters. Key features:
+This repository explores **MorphReuse**, an efficient parameter-sharing technique that replaces network layers with a shared trainable core and per-layer scaling adapters. Key features:
 
 - **Shared Core MLP**: Central trainable transformation module
 - **Per-Layer Scaling**: Learnable scaling factors for layer-specific adaptation
@@ -22,7 +22,7 @@ Benchmarked across vision and text tasks:
 
 ## Method by Dataset
 
-We evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**—on three datasets: MNIST, FashionMNIST, CIFAR-10, and SST-2. Each method modifies which layers are trained or reused.
+Evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**—on three datasets: MNIST, FashionMNIST, CIFAR-10, and SST-2. Each method modifies which layers are trained or reused.
 
 
 ### Image Classification (MNIST, FashionMNIST, CIFAR10)
@@ -61,6 +61,7 @@ class MorphReuseAdapter(nn.Module):
         self.out_proj = nn.Linear(bottleneck, out_dim, bias=False)
         nn.init.xavier_uniform_(self.in_proj.weight)
         nn.init.xavier_uniform_(self.out_proj.weight)
+
     def forward(self, x):
         return self.out_proj(self.core(self.in_proj(x)))
 ```
@@ -77,7 +78,7 @@ class MorphReuseAdapter(nn.Module):
 - Base weights are frozen; only adapters are trainable.
 
 
-### CIFAR-10 (RGB Images 3×32×32, Conv Backbone + Classifier MLP)
+#### CIFAR-10 (RGB Images 3×32×32, Conv Backbone + Classifier MLP)
 
 Same MLP as above on top of a Convolutional Backbone net for feature extraction.
 
@@ -97,13 +98,25 @@ Same MLP as above on top of a Convolutional Backbone net for feature extraction.
 
 
 
-### SST-2 (Sentiment Classification, Pretrained TinyBERT)
+### SST-2 (Text Sentiment Classification)
 
 | Method       | Architecture                          | Trainable Components               |
 |--------------|---------------------------------------|------------------------------------|
-| **Baseline** | Pretrained TinyBERT                   | Three top layers                   |
+| **Baseline** | Pretrained TinyBERT LLM                  | Three top layers                   |
 | **MorphReuse**| Pretrained TinyBERT + Surrogate Shared Weights for three top layers + Non-Linear activation       | Surrogate Weights|
 | **LoRA**     | Pretrained TinyBERT+Low-Rank Adapters for three top layer  | LoRA residual weights|
+
+
+**TinyBERT** is a distilled version of BERT developed by Huawei Noah’s Ark Lab. It significantly reduces model size and inference time while retaining much of the original BERT performance.
+In this project, TinyBERT is used as a frozen LLM backbone for SST-2 sentiment classification, with MorphReuse or LoRA applied on the top layers.
+
+- **Model Name**: `huawei-noah/TinyBERT_General_4L_312D`
+- **Architecture**: 4 transformer layers, 312 hidden size, 12 attention heads
+- **Pretrained on**: General-domain data
+- **Use Case**: Efficient fine-tuning and inference for downstream NLP tasks like SST-2
+- **Parameter Count**: ~14.5M
+- **Tokenizer**: BERT-compatible (`bert-base-uncased`)
+
 
 
 **Key Implementation**:
@@ -180,28 +193,46 @@ pip install -U --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu \
    "datasets<2.19" transformers "peft<0.7.0" huggingface_hub fsspec accelerate
 ```
 
-### 1. MNIST (MLP for 1×28×28)
-
-![MNIST](https://github.com/user-attachments/assets/cad4d968-fb9c-4e25-97fd-1e5d548e65f1)
+### Tested Datasets
 
 
-### 2. FashionMNIST (MLP for 1×28×28)
-
-![FashionMNIST](https://github.com/user-attachments/assets/26d71ee7-845f-4dc3-8f87-71d4bf74799e)
-
-
-
-### 3. CIFAR-10 (ConvNet + MorphReuse Classifier)
-
-![CIFAR10](https://github.com/user-attachments/assets/b4c876d2-8cf4-4cb0-828b-1c5132330f10)
-
-
-### 4. SST-2 (Text Dataset using Headless TinyBERT + MorphReuse)
-
-*Accuracy and F1-score benchmarks coming soon.*
+| Dataset      | Type                    | Classes                      | Shape      | Usage                                 |
+|--------------|-------------------------|------------------------------|------------|----------------------------------------|
+| **MNIST**        | Handwritten digits      | 10 (digits 0–9)              | 1×28×28    | Image classification (MLP/CNN)        |
+| **FashionMNIST** | Clothing images         | 10 (shirts, shoes, etc.)     | 1×28×28    | Realistic alt. to MNIST               |
+| **CIFAR-10**     | Natural object photos   | 10 (airplane, dog, etc.)     | 3×32×32    | Image classification (CNN)            |
+| **SST-2**        | Movie review sentences  | 2 (positive / negative)      | 64 Max Sequence Len (padded)   | Text classification (LLM fine-tuning) |
 
 
 
-## License
+### 1. MNIST (MLP for flatten 1×28×28 image)
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for full text.
+<img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/ddee55e1-fa87-40dc-bbb7-d6d362a27cd3" />
+
+
+
+### 2. FashionMNIST (MLP Classifier for flatten 1×28×28 image)
+
+
+<img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/281556e2-4b8d-4afe-8535-3e59deda2d7b" />
+
+
+
+### 3. CIFAR-10 (ConvNet + MLP Classifier)
+
+<img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/d2bede36-598a-49c9-b481-c5b409d59dce" />
+
+
+
+### 4. SST-2 (Pretrained Headless TinyBERT + Trained 3 top layers)
+
+<img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/a7883e3a-75c4-4312-a80f-f19d59de4681" />
+
+
+## References
+
+- [TinyBERT on Hugging Face](https://huggingface.co/huawei-noah/TinyBERT_General_4L_312D)
+- [Paper: TinyBERT: Distilling BERT for Natural Language Understanding](https://arxiv.org/abs/1909.10351)
+- Parameter-efficient fine-tuning: [LoRA paper](https://arxiv.org/abs/2106.09685)
+- Weight sharing in transformers: e.g., ALBERT [https://arxiv.org/abs/1909.11942](https://arxiv.org/abs/1909.11942)  
+
