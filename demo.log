@@ -1,18 +1,17 @@
 Using device: cpu
 ========= Configuration ==========
 DEVICE: cpu
-SCALE_FACTOR: 1
 WIDTH: 512
 MORPH_REUSE_DIM: 128
-MORPH_REUSE_EXPAND: 2
+MORPH_REUSE_EXPAND: 2.5
 EPOCHS: 5
 BATCH_SIZE: 128
-LR_BASELINE: 0.001
-LR_MORPH_REUSE: 0.001
+LR_VISION: 0.001
 PRETRAINED_NAME: huawei-noah/TinyBERT_General_4L_312D
 LLM_SEQ_LEN: 64
 MAX_SAMPLES: 1000
 BATCH_SIZE_LM: 32
+LR_LM: 0.001
 DATASETS: {'MNIST': {'type': 'classification', 'num_classes': 10, 'input_shape': (1, 28, 28), 'transform': Compose(
     ToTensor()
     Normalize(mean=(0.5,), std=(0.5,))
@@ -27,317 +26,18 @@ DATASETS: {'MNIST': {'type': 'classification', 'num_classes': 10, 'input_shape':
 
 ========= System Information =========
 OS: Linux-6.1.123+-x86_64-with-glibc2.35
-CPU: AMD EPYC 7B12 (2×2.25 GHz)
+CPU: Intel(R) Xeon(R) CPU @ 2.20GHz (2×2.20 GHz)
 RAM: 12977 MB
 Python: 3.11.13
-PyTorch: 2.3.1+cpu
+PyTorch: 2.6.0+cu124
 Device: cpu
 =====================================
 
 
 ==================================================
-Running experiment: MNIST
-==================================================
-
-Dataset: MNIST
-Type: Classification
-Classes: 10
-Input shape: (1, 28, 28)
-Train samples: 60000
-Test samples: 10000
-Batch size: 128
-Building Vision Baseline...
-Building Vision MorphReuse...
-Building Vision LoRA...
-
-Model Parameters:
-Baseline:
-  Total params: 669,706
-  Trainable params: 669,706
-  Percentage trainable: 100.00%
-MorphReuse:
-  Total params: 298,625
-  Trainable params: 65,921
-  Percentage trainable: 22.07%
-LoRA:
-  Total params: 681,074
-  Trainable params: 11,368
-  Percentage trainable: 1.67%
-
-Training Baseline:
-
-MNIST-Baseline (Initial) Memory (MB)
-  Params:   2.55
-  Grad:     2.55
-  Buffers:  0.00
-  Optim:    5.11
-  Total:    10.22
-[MNIST-Baseline] Evaluating initial accuracy...
-  Initial Train: 8.42%, Test: 7.96%
-[MNIST-Baseline] Epoch 1/5: Train: 95.81%, Test: 95.43% | Time: Fwd 1.9s, Bwd 2.0s, Upd 1.7s Total 5.6s
-[MNIST-Baseline] Epoch 2/5: Train: 96.92%, Test: 96.43% | Time: Fwd 1.9s, Bwd 2.0s, Upd 1.7s Total 5.6s
-[MNIST-Baseline] Epoch 3/5: Train: 98.00%, Test: 97.21% | Time: Fwd 1.8s, Bwd 1.9s, Upd 1.6s Total 5.3s
-[MNIST-Baseline] Epoch 4/5: Train: 98.04%, Test: 96.93% | Time: Fwd 1.8s, Bwd 1.9s, Upd 1.6s Total 5.3s
-[MNIST-Baseline] Epoch 5/5: Train: 97.51%, Test: 96.63% | Time: Fwd 1.8s, Bwd 1.9s, Upd 1.7s Total 5.4s
-
-MNIST-Baseline (Final) Memory (MB)
-  Params:   2.55
-  Grad:     2.55
-  Buffers:  0.00
-  Optim:    5.11
-  Total:    10.22
-
-Training MorphReuse:
-
-MNIST-MorphReuse (Initial) Memory (MB)
-  Params:   1.14
-  Grad:     0.25
-  Buffers:  0.00
-  Optim:    0.50
-  Total:    1.89
-[MNIST-MorphReuse] Evaluating initial accuracy...
-  Initial Train: 9.34%, Test: 9.90%
-[MNIST-MorphReuse] Epoch 1/5: Train: 92.33%, Test: 92.39% | Time: Fwd 1.7s, Bwd 1.3s, Upd 0.4s Total 3.4s
-[MNIST-MorphReuse] Epoch 2/5: Train: 95.81%, Test: 95.40% | Time: Fwd 1.7s, Bwd 1.3s, Upd 0.4s Total 3.4s
-[MNIST-MorphReuse] Epoch 3/5: Train: 96.69%, Test: 95.92% | Time: Fwd 1.6s, Bwd 1.2s, Upd 0.4s Total 3.3s
-[MNIST-MorphReuse] Epoch 4/5: Train: 97.13%, Test: 96.01% | Time: Fwd 1.6s, Bwd 1.2s, Upd 0.4s Total 3.2s
-[MNIST-MorphReuse] Epoch 5/5: Train: 97.68%, Test: 96.72% | Time: Fwd 1.5s, Bwd 1.2s, Upd 0.4s Total 3.1s
-
-MNIST-MorphReuse (Final) Memory (MB)
-  Params:   1.14
-  Grad:     0.25
-  Buffers:  0.00
-  Optim:    0.50
-  Total:    1.89
-
-Training LoRA:
-
-MNIST-LoRA (Initial) Memory (MB)
-  Params:   2.60
-  Grad:     0.04
-  Buffers:  0.00
-  Optim:    0.09
-  Total:    2.73
-[MNIST-LoRA] Evaluating initial accuracy...
-  Initial Train: 8.99%, Test: 9.44%
-[MNIST-LoRA] Epoch 1/5: Train: 80.88%, Test: 81.26% | Time: Fwd 2.1s, Bwd 1.0s, Upd 0.4s Total 3.5s
-[MNIST-LoRA] Epoch 2/5: Train: 86.75%, Test: 86.59% | Time: Fwd 2.2s, Bwd 1.1s, Upd 0.4s Total 3.6s
-[MNIST-LoRA] Epoch 3/5: Train: 89.42%, Test: 89.08% | Time: Fwd 2.3s, Bwd 1.1s, Upd 0.4s Total 3.8s
-[MNIST-LoRA] Epoch 4/5: Train: 91.12%, Test: 90.75% | Time: Fwd 2.2s, Bwd 1.1s, Upd 0.4s Total 3.6s
-[MNIST-LoRA] Epoch 5/5: Train: 92.07%, Test: 91.74% | Time: Fwd 2.1s, Bwd 1.0s, Upd 0.4s Total 3.5s
-
-MNIST-LoRA (Final) Memory (MB)
-  Params:   2.60
-  Grad:     0.04
-  Buffers:  0.00
-  Optim:    0.09
-  Total:    2.73
-
-
-==================================================
-Running experiment: FashionMNIST
-==================================================
-
-Dataset: FashionMNIST
-Type: Classification
-Classes: 10
-Input shape: (1, 28, 28)
-Train samples: 60000
-Test samples: 10000
-Batch size: 128
-Building Vision Baseline...
-Building Vision MorphReuse...
-Building Vision LoRA...
-
-Model Parameters:
-Baseline:
-  Total params: 669,706
-  Trainable params: 669,706
-  Percentage trainable: 100.00%
-MorphReuse:
-  Total params: 298,625
-  Trainable params: 65,921
-  Percentage trainable: 22.07%
-LoRA:
-  Total params: 681,074
-  Trainable params: 11,368
-  Percentage trainable: 1.67%
-
-Training Baseline:
-
-FashionMNIST-Baseline (Initial) Memory (MB)
-  Params:   2.55
-  Grad:     2.55
-  Buffers:  0.00
-  Optim:    5.11
-  Total:    10.22
-[FashionMNIST-Baseline] Evaluating initial accuracy...
-  Initial Train: 4.59%, Test: 4.68%
-[FashionMNIST-Baseline] Epoch 1/5: Train: 85.83%, Test: 83.90% | Time: Fwd 1.8s, Bwd 2.0s, Upd 1.6s Total 5.4s
-[FashionMNIST-Baseline] Epoch 2/5: Train: 88.12%, Test: 86.22% | Time: Fwd 1.8s, Bwd 1.9s, Upd 1.6s Total 5.3s
-[FashionMNIST-Baseline] Epoch 3/5: Train: 89.34%, Test: 86.99% | Time: Fwd 1.8s, Bwd 1.9s, Upd 1.6s Total 5.3s
-[FashionMNIST-Baseline] Epoch 4/5: Train: 89.84%, Test: 87.32% | Time: Fwd 1.7s, Bwd 1.9s, Upd 1.6s Total 5.2s
-[FashionMNIST-Baseline] Epoch 5/5: Train: 90.95%, Test: 87.91% | Time: Fwd 1.8s, Bwd 1.9s, Upd 1.6s Total 5.3s
-
-FashionMNIST-Baseline (Final) Memory (MB)
-  Params:   2.55
-  Grad:     2.55
-  Buffers:  0.00
-  Optim:    5.11
-  Total:    10.22
-
-Training MorphReuse:
-
-FashionMNIST-MorphReuse (Initial) Memory (MB)
-  Params:   1.14
-  Grad:     0.25
-  Buffers:  0.00
-  Optim:    0.50
-  Total:    1.89
-[FashionMNIST-MorphReuse] Evaluating initial accuracy...
-  Initial Train: 11.60%, Test: 11.47%
-[FashionMNIST-MorphReuse] Epoch 1/5: Train: 84.55%, Test: 83.30% | Time: Fwd 1.6s, Bwd 1.3s, Upd 0.4s Total 3.3s
-[FashionMNIST-MorphReuse] Epoch 2/5: Train: 85.74%, Test: 84.38% | Time: Fwd 1.6s, Bwd 1.3s, Upd 0.4s Total 3.3s
-[FashionMNIST-MorphReuse] Epoch 3/5: Train: 87.02%, Test: 85.57% | Time: Fwd 1.6s, Bwd 1.2s, Upd 0.4s Total 3.2s
-[FashionMNIST-MorphReuse] Epoch 4/5: Train: 88.04%, Test: 85.80% | Time: Fwd 1.5s, Bwd 1.2s, Upd 0.4s Total 3.1s
-[FashionMNIST-MorphReuse] Epoch 5/5: Train: 88.53%, Test: 86.16% | Time: Fwd 1.6s, Bwd 1.3s, Upd 0.4s Total 3.3s
-
-FashionMNIST-MorphReuse (Final) Memory (MB)
-  Params:   1.14
-  Grad:     0.25
-  Buffers:  0.00
-  Optim:    0.50
-  Total:    1.89
-
-Training LoRA:
-
-FashionMNIST-LoRA (Initial) Memory (MB)
-  Params:   2.60
-  Grad:     0.04
-  Buffers:  0.00
-  Optim:    0.09
-  Total:    2.73
-[FashionMNIST-LoRA] Evaluating initial accuracy...
-  Initial Train: 14.32%, Test: 15.13%
-[FashionMNIST-LoRA] Epoch 1/5: Train: 78.57%, Test: 77.55% | Time: Fwd 2.3s, Bwd 1.1s, Upd 0.4s Total 3.8s
-[FashionMNIST-LoRA] Epoch 2/5: Train: 81.36%, Test: 80.16% | Time: Fwd 2.2s, Bwd 1.1s, Upd 0.4s Total 3.7s
-[FashionMNIST-LoRA] Epoch 3/5: Train: 83.37%, Test: 81.91% | Time: Fwd 2.2s, Bwd 1.1s, Upd 0.4s Total 3.6s
-[FashionMNIST-LoRA] Epoch 4/5: Train: 83.78%, Test: 82.29% | Time: Fwd 2.1s, Bwd 1.1s, Upd 0.3s Total 3.5s
-[FashionMNIST-LoRA] Epoch 5/5: Train: 84.94%, Test: 83.44% | Time: Fwd 2.2s, Bwd 1.1s, Upd 0.4s Total 3.6s
-
-FashionMNIST-LoRA (Final) Memory (MB)
-  Params:   2.60
-  Grad:     0.04
-  Buffers:  0.00
-  Optim:    0.09
-  Total:    2.73
-
-
-==================================================
-Running experiment: CIFAR10
-==================================================
-Files already downloaded and verified
-Files already downloaded and verified
-
-Dataset: CIFAR10
-Type: Classification
-Classes: 10
-Input shape: (3, 32, 32)
-Train samples: 50000
-Test samples: 10000
-Batch size: 128
-Building Vision Baseline...
-Building Vision MorphReuse...
-Building Vision LoRA...
-
-Model Parameters:
-Baseline:
-  Total params: 1,841,162
-  Trainable params: 1,841,162
-  Percentage trainable: 100.00%
-MorphReuse:
-  Total params: 591,489
-  Trainable params: 65,921
-  Percentage trainable: 11.14%
-LoRA:
-  Total params: 1,861,682
-  Trainable params: 20,520
-  Percentage trainable: 1.10%
-
-Training Baseline:
-
-CIFAR10-Baseline (Initial) Memory (MB)
-  Params:   7.02
-  Grad:     7.02
-  Buffers:  0.00
-  Optim:    14.05
-  Total:    28.09
-[CIFAR10-Baseline] Evaluating initial accuracy...
-  Initial Train: 9.96%, Test: 9.48%
-[CIFAR10-Baseline] Epoch 1/5: Train: 49.64%, Test: 47.55% | Time: Fwd 3.2s, Bwd 3.4s, Upd 3.5s Total 10.2s
-[CIFAR10-Baseline] Epoch 2/5: Train: 53.15%, Test: 49.11% | Time: Fwd 3.2s, Bwd 3.4s, Upd 3.5s Total 10.1s
-[CIFAR10-Baseline] Epoch 3/5: Train: 58.71%, Test: 51.86% | Time: Fwd 3.1s, Bwd 3.4s, Upd 3.4s Total 9.9s
-[CIFAR10-Baseline] Epoch 4/5: Train: 62.65%, Test: 53.84% | Time: Fwd 3.2s, Bwd 3.5s, Upd 3.6s Total 10.3s
-[CIFAR10-Baseline] Epoch 5/5: Train: 64.63%, Test: 52.82% | Time: Fwd 3.2s, Bwd 3.5s, Upd 3.5s Total 10.2s
-
-CIFAR10-Baseline (Final) Memory (MB)
-  Params:   7.02
-  Grad:     7.02
-  Buffers:  0.00
-  Optim:    14.05
-  Total:    28.09
-
-Training MorphReuse:
-
-CIFAR10-MorphReuse (Initial) Memory (MB)
-  Params:   2.26
-  Grad:     0.25
-  Buffers:  0.00
-  Optim:    0.50
-  Total:    3.01
-[CIFAR10-MorphReuse] Evaluating initial accuracy...
-  Initial Train: 11.45%, Test: 11.75%
-[CIFAR10-MorphReuse] Epoch 1/5: Train: 43.67%, Test: 43.08% | Time: Fwd 1.8s, Bwd 1.0s, Upd 0.3s Total 3.1s
-[CIFAR10-MorphReuse] Epoch 2/5: Train: 47.59%, Test: 45.79% | Time: Fwd 1.8s, Bwd 1.0s, Upd 0.4s Total 3.2s
-[CIFAR10-MorphReuse] Epoch 3/5: Train: 49.88%, Test: 47.03% | Time: Fwd 1.8s, Bwd 1.0s, Upd 0.4s Total 3.2s
-[CIFAR10-MorphReuse] Epoch 4/5: Train: 51.57%, Test: 48.33% | Time: Fwd 1.8s, Bwd 1.0s, Upd 0.3s Total 3.1s
-[CIFAR10-MorphReuse] Epoch 5/5: Train: 53.76%, Test: 49.03% | Time: Fwd 1.9s, Bwd 1.1s, Upd 0.4s Total 3.4s
-
-CIFAR10-MorphReuse (Final) Memory (MB)
-  Params:   2.26
-  Grad:     0.25
-  Buffers:  0.00
-  Optim:    0.50
-  Total:    3.01
-
-Training LoRA:
-
-CIFAR10-LoRA (Initial) Memory (MB)
-  Params:   7.10
-  Grad:     0.08
-  Buffers:  0.00
-  Optim:    0.16
-  Total:    7.34
-[CIFAR10-LoRA] Evaluating initial accuracy...
-  Initial Train: 10.37%, Test: 10.34%
-[CIFAR10-LoRA] Epoch 1/5: Train: 35.86%, Test: 35.82% | Time: Fwd 3.6s, Bwd 1.0s, Upd 0.3s Total 4.9s
-[CIFAR10-LoRA] Epoch 2/5: Train: 38.39%, Test: 38.03% | Time: Fwd 3.6s, Bwd 1.0s, Upd 0.3s Total 5.0s
-[CIFAR10-LoRA] Epoch 3/5: Train: 39.81%, Test: 39.41% | Time: Fwd 3.5s, Bwd 1.0s, Upd 0.3s Total 4.8s
-[CIFAR10-LoRA] Epoch 4/5: Train: 41.23%, Test: 40.61% | Time: Fwd 3.5s, Bwd 1.0s, Upd 0.3s Total 4.9s
-[CIFAR10-LoRA] Epoch 5/5: Train: 42.04%, Test: 41.05% | Time: Fwd 3.5s, Bwd 1.0s, Upd 0.3s Total 4.8s
-
-CIFAR10-LoRA (Final) Memory (MB)
-  Params:   7.10
-  Grad:     0.08
-  Buffers:  0.00
-  Optim:    0.16
-  Total:    7.34
-
-
-==================================================
 Running experiment: sst2
 ==================================================
-Labels counts: Counter({1: 553, 0: 447})
+Labels counts: Counter({1: 521, 0: 479})
 Labels counts: Counter({1: 444, 0: 428})
 
 Dataset: sst2
@@ -382,12 +82,12 @@ sst2-Baseline (Initial) Memory (MB)
   Optim:    17.43
   Total:    80.90
 [sst2-Baseline] Evaluating initial accuracy...
-  Initial Train: 56.10%, Test: 56.08%
-[sst2-Baseline] Epoch 1/5: Train: 81.40%, Test: 77.52% | Time: Fwd 11.8s, Bwd 9.0s, Upd 0.3s Total 21.1s
-[sst2-Baseline] Epoch 2/5: Train: 83.70%, Test: 79.01% | Time: Fwd 11.9s, Bwd 9.1s, Upd 0.3s Total 21.4s
-[sst2-Baseline] Epoch 3/5: Train: 86.20%, Test: 81.77% | Time: Fwd 11.6s, Bwd 9.1s, Upd 0.3s Total 21.0s
-[sst2-Baseline] Epoch 4/5: Train: 81.60%, Test: 73.74% | Time: Fwd 15.2s, Bwd 11.8s, Upd 0.4s Total 27.4s
-[sst2-Baseline] Epoch 5/5: Train: 90.70%, Test: 83.83% | Time: Fwd 13.1s, Bwd 9.9s, Upd 0.4s Total 23.4s
+  Initial Train: 52.20%, Test: 50.92%
+[sst2-Baseline] Epoch 1/5: Train: 80.80%, Test: 77.75% | Time: Fwd 14.8s, Bwd 10.9s, Upd 0.4s Total 26.2s
+[sst2-Baseline] Epoch 2/5: Train: 78.80%, Test: 72.82% | Time: Fwd 15.0s, Bwd 10.9s, Upd 0.4s Total 26.3s
+[sst2-Baseline] Epoch 3/5: Train: 81.30%, Test: 79.01% | Time: Fwd 15.2s, Bwd 11.1s, Upd 0.4s Total 26.8s
+[sst2-Baseline] Epoch 4/5: Train: 83.80%, Test: 82.34% | Time: Fwd 14.7s, Bwd 11.0s, Upd 0.4s Total 26.2s
+[sst2-Baseline] Epoch 5/5: Train: 86.40%, Test: 81.54% | Time: Fwd 14.8s, Bwd 11.0s, Upd 0.4s Total 26.2s
 
 sst2-Baseline (Final) Memory (MB)
   Params:   54.74
@@ -405,12 +105,12 @@ sst2-MorphReuse (Initial) Memory (MB)
   Optim:    6.49
   Total:    59.02
 [sst2-MorphReuse] Evaluating initial accuracy...
-  Initial Train: 56.60%, Test: 53.33%
-[sst2-MorphReuse] Epoch 1/5: Train: 55.30%, Test: 50.92% | Time: Fwd 12.3s, Bwd 9.9s, Upd 0.2s Total 22.4s
-[sst2-MorphReuse] Epoch 2/5: Train: 71.90%, Test: 71.56% | Time: Fwd 16.3s, Bwd 13.0s, Upd 0.2s Total 29.5s
-[sst2-MorphReuse] Epoch 3/5: Train: 81.10%, Test: 78.90% | Time: Fwd 16.8s, Bwd 13.0s, Upd 0.3s Total 30.1s
-[sst2-MorphReuse] Epoch 4/5: Train: 84.90%, Test: 80.28% | Time: Fwd 12.2s, Bwd 9.8s, Upd 0.2s Total 22.2s
-[sst2-MorphReuse] Epoch 5/5: Train: 86.00%, Test: 80.96% | Time: Fwd 12.4s, Bwd 10.0s, Upd 0.2s Total 22.5s
+  Initial Train: 47.50%, Test: 48.62%
+[sst2-MorphReuse] Epoch 1/5: Train: 75.30%, Test: 69.95% | Time: Fwd 15.7s, Bwd 12.9s, Upd 0.2s Total 28.8s
+[sst2-MorphReuse] Epoch 2/5: Train: 82.10%, Test: 78.78% | Time: Fwd 16.0s, Bwd 13.1s, Upd 0.2s Total 29.3s
+[sst2-MorphReuse] Epoch 3/5: Train: 85.10%, Test: 82.11% | Time: Fwd 16.1s, Bwd 13.1s, Upd 0.2s Total 29.5s
+[sst2-MorphReuse] Epoch 4/5: Train: 86.10%, Test: 81.65% | Time: Fwd 15.7s, Bwd 12.8s, Upd 0.2s Total 28.7s
+[sst2-MorphReuse] Epoch 5/5: Train: 84.50%, Test: 80.28% | Time: Fwd 15.6s, Bwd 12.8s, Upd 0.2s Total 28.6s
 
 sst2-MorphReuse (Final) Memory (MB)
   Params:   49.27
@@ -428,12 +128,12 @@ sst2-LoRA (Initial) Memory (MB)
   Optim:    0.68
   Total:    56.11
 [sst2-LoRA] Evaluating initial accuracy...
-  Initial Train: 55.30%, Test: 50.92%
-[sst2-LoRA] Epoch 1/5: Train: 78.00%, Test: 74.43% | Time: Fwd 14.2s, Bwd 17.1s, Upd 0.1s Total 31.3s
-[sst2-LoRA] Epoch 2/5: Train: 84.80%, Test: 81.54% | Time: Fwd 14.1s, Bwd 17.3s, Upd 0.1s Total 31.5s
-[sst2-LoRA] Epoch 3/5: Train: 87.10%, Test: 83.26% | Time: Fwd 14.3s, Bwd 17.2s, Upd 0.1s Total 31.6s
-[sst2-LoRA] Epoch 4/5: Train: 86.50%, Test: 78.21% | Time: Fwd 14.4s, Bwd 17.5s, Upd 0.1s Total 32.1s
-[sst2-LoRA] Epoch 5/5: Train: 91.30%, Test: 83.72% | Time: Fwd 14.0s, Bwd 16.9s, Upd 0.1s Total 31.0s
+  Initial Train: 47.90%, Test: 49.08%
+[sst2-LoRA] Epoch 1/5: Train: 81.20%, Test: 79.24% | Time: Fwd 17.8s, Bwd 15.6s, Upd 0.1s Total 33.5s
+[sst2-LoRA] Epoch 2/5: Train: 80.70%, Test: 76.38% | Time: Fwd 17.7s, Bwd 15.6s, Upd 0.1s Total 33.4s
+[sst2-LoRA] Epoch 3/5: Train: 87.90%, Test: 82.91% | Time: Fwd 17.9s, Bwd 16.3s, Upd 0.1s Total 34.4s
+[sst2-LoRA] Epoch 4/5: Train: 88.90%, Test: 84.98% | Time: Fwd 17.3s, Bwd 15.2s, Upd 0.1s Total 32.6s
+[sst2-LoRA] Epoch 5/5: Train: 92.00%, Test: 82.11% | Time: Fwd 17.6s, Bwd 15.4s, Upd 0.1s Total 33.2s
 
 sst2-LoRA (Final) Memory (MB)
   Params:   55.08
@@ -441,3 +141,300 @@ sst2-LoRA (Final) Memory (MB)
   Buffers:  0.01
   Optim:    0.68
   Total:    56.11
+
+
+==================================================
+Running experiment: MNIST
+==================================================
+
+Dataset: MNIST
+Type: Classification
+Classes: 10
+Input shape: (1, 28, 28)
+Train samples: 60000
+Test samples: 10000
+Batch size: 128
+Building Vision Baseline...
+Building Vision MorphReuse...
+Building Vision LoRA...
+
+Model Parameters:
+Baseline:
+  Total params: 669,706
+  Trainable params: 669,706
+  Percentage trainable: 100.00%
+MorphReuse:
+  Total params: 315,713
+  Trainable params: 83,009
+  Percentage trainable: 26.29%
+LoRA:
+  Total params: 681,074
+  Trainable params: 11,368
+  Percentage trainable: 1.67%
+
+Training Baseline:
+
+MNIST-Baseline (Initial) Memory (MB)
+  Params:   2.55
+  Grad:     2.55
+  Buffers:  0.00
+  Optim:    5.11
+  Total:    10.22
+[MNIST-Baseline] Evaluating initial accuracy...
+  Initial Train: 6.54%, Test: 6.20%
+[MNIST-Baseline] Epoch 1/5: Train: 94.70%, Test: 94.84% | Time: Fwd 1.8s, Bwd 2.2s, Upd 2.2s Total 6.2s
+[MNIST-Baseline] Epoch 2/5: Train: 96.31%, Test: 95.76% | Time: Fwd 1.8s, Bwd 2.2s, Upd 4.3s Total 8.3s
+[MNIST-Baseline] Epoch 3/5: Train: 97.88%, Test: 97.17% | Time: Fwd 1.8s, Bwd 2.3s, Upd 5.0s Total 9.1s
+[MNIST-Baseline] Epoch 4/5: Train: 98.19%, Test: 97.08% | Time: Fwd 1.8s, Bwd 2.2s, Upd 4.9s Total 8.9s
+[MNIST-Baseline] Epoch 5/5: Train: 98.01%, Test: 97.15% | Time: Fwd 1.8s, Bwd 2.2s, Upd 4.9s Total 9.0s
+
+MNIST-Baseline (Final) Memory (MB)
+  Params:   2.55
+  Grad:     2.55
+  Buffers:  0.00
+  Optim:    5.11
+  Total:    10.22
+
+Training MorphReuse:
+
+MNIST-MorphReuse (Initial) Memory (MB)
+  Params:   1.20
+  Grad:     0.32
+  Buffers:  0.00
+  Optim:    0.63
+  Total:    2.15
+[MNIST-MorphReuse] Evaluating initial accuracy...
+  Initial Train: 11.43%, Test: 11.21%
+[MNIST-MorphReuse] Epoch 1/5: Train: 93.60%, Test: 93.40% | Time: Fwd 1.7s, Bwd 1.7s, Upd 0.6s Total 4.0s
+[MNIST-MorphReuse] Epoch 2/5: Train: 95.73%, Test: 95.61% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+[MNIST-MorphReuse] Epoch 3/5: Train: 95.52%, Test: 94.95% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+[MNIST-MorphReuse] Epoch 4/5: Train: 96.82%, Test: 96.03% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+[MNIST-MorphReuse] Epoch 5/5: Train: 97.69%, Test: 96.70% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+
+MNIST-MorphReuse (Final) Memory (MB)
+  Params:   1.20
+  Grad:     0.32
+  Buffers:  0.00
+  Optim:    0.63
+  Total:    2.15
+
+Training LoRA:
+
+MNIST-LoRA (Initial) Memory (MB)
+  Params:   2.60
+  Grad:     0.04
+  Buffers:  0.00
+  Optim:    0.09
+  Total:    2.73
+[MNIST-LoRA] Evaluating initial accuracy...
+  Initial Train: 13.00%, Test: 12.43%
+[MNIST-LoRA] Epoch 1/5: Train: 82.58%, Test: 82.65% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 4.0s
+[MNIST-LoRA] Epoch 2/5: Train: 86.27%, Test: 87.05% | Time: Fwd 2.4s, Bwd 1.2s, Upd 0.4s Total 4.0s
+[MNIST-LoRA] Epoch 3/5: Train: 90.13%, Test: 90.02% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 3.9s
+[MNIST-LoRA] Epoch 4/5: Train: 91.38%, Test: 91.20% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 3.9s
+[MNIST-LoRA] Epoch 5/5: Train: 92.14%, Test: 91.73% | Time: Fwd 2.2s, Bwd 1.2s, Upd 0.4s Total 3.8s
+
+MNIST-LoRA (Final) Memory (MB)
+  Params:   2.60
+  Grad:     0.04
+  Buffers:  0.00
+  Optim:    0.09
+  Total:    2.73
+
+
+==================================================
+Running experiment: FashionMNIST
+==================================================
+
+Dataset: FashionMNIST
+Type: Classification
+Classes: 10
+Input shape: (1, 28, 28)
+Train samples: 60000
+Test samples: 10000
+Batch size: 128
+Building Vision Baseline...
+Building Vision MorphReuse...
+Building Vision LoRA...
+
+Model Parameters:
+Baseline:
+  Total params: 669,706
+  Trainable params: 669,706
+  Percentage trainable: 100.00%
+MorphReuse:
+  Total params: 315,713
+  Trainable params: 83,009
+  Percentage trainable: 26.29%
+LoRA:
+  Total params: 681,074
+  Trainable params: 11,368
+  Percentage trainable: 1.67%
+
+Training Baseline:
+
+FashionMNIST-Baseline (Initial) Memory (MB)
+  Params:   2.55
+  Grad:     2.55
+  Buffers:  0.00
+  Optim:    5.11
+  Total:    10.22
+[FashionMNIST-Baseline] Evaluating initial accuracy...
+  Initial Train: 12.29%, Test: 12.41%
+[FashionMNIST-Baseline] Epoch 1/5: Train: 85.46%, Test: 83.66% | Time: Fwd 1.8s, Bwd 2.3s, Upd 2.0s Total 6.1s
+[FashionMNIST-Baseline] Epoch 2/5: Train: 87.77%, Test: 85.66% | Time: Fwd 1.8s, Bwd 2.3s, Upd 2.5s Total 6.5s
+[FashionMNIST-Baseline] Epoch 3/5: Train: 88.21%, Test: 85.95% | Time: Fwd 1.8s, Bwd 2.3s, Upd 2.9s Total 6.9s
+[FashionMNIST-Baseline] Epoch 4/5: Train: 88.68%, Test: 86.56% | Time: Fwd 1.8s, Bwd 2.2s, Upd 3.0s Total 7.0s
+[FashionMNIST-Baseline] Epoch 5/5: Train: 90.89%, Test: 88.06% | Time: Fwd 1.8s, Bwd 2.2s, Upd 3.1s Total 7.2s
+
+FashionMNIST-Baseline (Final) Memory (MB)
+  Params:   2.55
+  Grad:     2.55
+  Buffers:  0.00
+  Optim:    5.11
+  Total:    10.22
+
+Training MorphReuse:
+
+FashionMNIST-MorphReuse (Initial) Memory (MB)
+  Params:   1.20
+  Grad:     0.32
+  Buffers:  0.00
+  Optim:    0.63
+  Total:    2.15
+[FashionMNIST-MorphReuse] Evaluating initial accuracy...
+  Initial Train: 9.02%, Test: 8.45%
+[FashionMNIST-MorphReuse] Epoch 1/5: Train: 84.44%, Test: 83.03% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+[FashionMNIST-MorphReuse] Epoch 2/5: Train: 86.14%, Test: 84.14% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+[FashionMNIST-MorphReuse] Epoch 3/5: Train: 87.78%, Test: 85.65% | Time: Fwd 1.8s, Bwd 1.8s, Upd 0.6s Total 4.2s
+[FashionMNIST-MorphReuse] Epoch 4/5: Train: 88.34%, Test: 85.52% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+[FashionMNIST-MorphReuse] Epoch 5/5: Train: 89.10%, Test: 86.28% | Time: Fwd 1.7s, Bwd 1.8s, Upd 0.6s Total 4.1s
+
+FashionMNIST-MorphReuse (Final) Memory (MB)
+  Params:   1.20
+  Grad:     0.32
+  Buffers:  0.00
+  Optim:    0.63
+  Total:    2.15
+
+Training LoRA:
+
+FashionMNIST-LoRA (Initial) Memory (MB)
+  Params:   2.60
+  Grad:     0.04
+  Buffers:  0.00
+  Optim:    0.09
+  Total:    2.73
+[FashionMNIST-LoRA] Evaluating initial accuracy...
+  Initial Train: 8.53%, Test: 8.50%
+[FashionMNIST-LoRA] Epoch 1/5: Train: 77.46%, Test: 76.69% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 3.8s
+[FashionMNIST-LoRA] Epoch 2/5: Train: 80.25%, Test: 79.02% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 4.0s
+[FashionMNIST-LoRA] Epoch 3/5: Train: 82.44%, Test: 81.24% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 4.0s
+[FashionMNIST-LoRA] Epoch 4/5: Train: 83.77%, Test: 82.67% | Time: Fwd 2.4s, Bwd 1.3s, Upd 0.4s Total 4.2s
+[FashionMNIST-LoRA] Epoch 5/5: Train: 84.53%, Test: 83.06% | Time: Fwd 2.3s, Bwd 1.2s, Upd 0.4s Total 4.0s
+
+FashionMNIST-LoRA (Final) Memory (MB)
+  Params:   2.60
+  Grad:     0.04
+  Buffers:  0.00
+  Optim:    0.09
+  Total:    2.73
+
+
+==================================================
+Running experiment: CIFAR10
+==================================================
+
+Dataset: CIFAR10
+Type: Classification
+Classes: 10
+Input shape: (3, 32, 32)
+Train samples: 50000
+Test samples: 10000
+Batch size: 128
+Building Vision Baseline...
+Building Vision MorphReuse...
+Building Vision LoRA...
+
+Model Parameters:
+Baseline:
+  Total params: 1,841,162
+  Trainable params: 1,841,162
+  Percentage trainable: 100.00%
+MorphReuse:
+  Total params: 608,577
+  Trainable params: 83,009
+  Percentage trainable: 13.64%
+LoRA:
+  Total params: 1,861,682
+  Trainable params: 20,520
+  Percentage trainable: 1.10%
+
+Training Baseline:
+
+CIFAR10-Baseline (Initial) Memory (MB)
+  Params:   7.02
+  Grad:     7.02
+  Buffers:  0.00
+  Optim:    14.05
+  Total:    28.09
+[CIFAR10-Baseline] Evaluating initial accuracy...
+  Initial Train: 9.83%, Test: 9.71%
+[CIFAR10-Baseline] Epoch 1/5: Train: 48.93%, Test: 46.88% | Time: Fwd 3.9s, Bwd 4.0s, Upd 4.0s Total 11.9s
+[CIFAR10-Baseline] Epoch 2/5: Train: 55.63%, Test: 50.91% | Time: Fwd 3.7s, Bwd 3.8s, Upd 4.0s Total 11.5s
+[CIFAR10-Baseline] Epoch 3/5: Train: 58.79%, Test: 51.64% | Time: Fwd 3.9s, Bwd 3.9s, Upd 4.4s Total 12.2s
+[CIFAR10-Baseline] Epoch 4/5: Train: 63.06%, Test: 53.56% | Time: Fwd 4.0s, Bwd 4.0s, Upd 4.3s Total 12.2s
+[CIFAR10-Baseline] Epoch 5/5: Train: 66.13%, Test: 53.73% | Time: Fwd 3.9s, Bwd 3.9s, Upd 4.3s Total 12.2s
+
+CIFAR10-Baseline (Final) Memory (MB)
+  Params:   7.02
+  Grad:     7.02
+  Buffers:  0.00
+  Optim:    14.05
+  Total:    28.09
+
+Training MorphReuse:
+
+CIFAR10-MorphReuse (Initial) Memory (MB)
+  Params:   2.32
+  Grad:     0.32
+  Buffers:  0.00
+  Optim:    0.63
+  Total:    3.27
+[CIFAR10-MorphReuse] Evaluating initial accuracy...
+  Initial Train: 9.13%, Test: 9.13%
+[CIFAR10-MorphReuse] Epoch 1/5: Train: 45.21%, Test: 43.46% | Time: Fwd 2.0s, Bwd 1.5s, Upd 0.5s Total 4.0s
+[CIFAR10-MorphReuse] Epoch 2/5: Train: 48.82%, Test: 45.96% | Time: Fwd 2.2s, Bwd 1.5s, Upd 0.5s Total 4.2s
+[CIFAR10-MorphReuse] Epoch 3/5: Train: 51.67%, Test: 47.56% | Time: Fwd 2.2s, Bwd 1.5s, Upd 0.5s Total 4.2s
+[CIFAR10-MorphReuse] Epoch 4/5: Train: 54.08%, Test: 48.73% | Time: Fwd 2.1s, Bwd 1.4s, Upd 0.5s Total 4.0s
+[CIFAR10-MorphReuse] Epoch 5/5: Train: 56.49%, Test: 49.35% | Time: Fwd 2.2s, Bwd 1.6s, Upd 0.5s Total 4.3s
+
+CIFAR10-MorphReuse (Final) Memory (MB)
+  Params:   2.32
+  Grad:     0.32
+  Buffers:  0.00
+  Optim:    0.63
+  Total:    3.27
+
+Training LoRA:
+
+CIFAR10-LoRA (Initial) Memory (MB)
+  Params:   7.10
+  Grad:     0.08
+  Buffers:  0.00
+  Optim:    0.16
+  Total:    7.34
+[CIFAR10-LoRA] Evaluating initial accuracy...
+  Initial Train: 9.90%, Test: 10.22%
+[CIFAR10-LoRA] Epoch 1/5: Train: 35.67%, Test: 35.84% | Time: Fwd 4.4s, Bwd 1.1s, Upd 0.4s Total 5.9s
+[CIFAR10-LoRA] Epoch 2/5: Train: 37.78%, Test: 37.50% | Time: Fwd 4.3s, Bwd 1.1s, Upd 0.4s Total 5.8s
+[CIFAR10-LoRA] Epoch 3/5: Train: 38.67%, Test: 38.73% | Time: Fwd 4.5s, Bwd 1.1s, Upd 0.4s Total 5.9s
+[CIFAR10-LoRA] Epoch 4/5: Train: 40.63%, Test: 39.79% | Time: Fwd 4.5s, Bwd 1.1s, Upd 0.4s Total 6.0s
+[CIFAR10-LoRA] Epoch 5/5: Train: 41.67%, Test: 41.01% | Time: Fwd 4.3s, Bwd 1.1s, Upd 0.4s Total 5.7s
+
+CIFAR10-LoRA (Final) Memory (MB)
+  Params:   7.10
+  Grad:     0.08
+  Buffers:  0.00
+  Optim:    0.16
+  Total:    7.34
