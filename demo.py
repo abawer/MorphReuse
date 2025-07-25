@@ -1,7 +1,6 @@
 # ========================================================
 # Colab MorphReuse demo (Baseline vs MorphReuse vs LoRA) - WITH LLM MorphReuse
-# MODIFIED FOR CPU-ONLY EXECUTION
-# MODIFIED TO USE ONLY SharedWeight, RENAMED TMM->MorphReuse
+# For CPU-ONLY EXECUTION
 #
 # Run first:
 # pip install -U --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu \
@@ -37,15 +36,15 @@ print(f"Using device: {DEVICE}")
 # =======================================================
 
 # ========== CPU-FRIENDLY HYPERPARAMETERS ===============
-SCALE_FACTOR = 1 # Reduced for CPU
-WIDTH = 512 * SCALE_FACTOR  # Reduced network width
-MORPH_REUSE_DIM = 128 * SCALE_FACTOR  # Reduced MorphReuse dimension
+# Vision / Global Consts
+WIDTH = 512
+MORPH_REUSE_DIM = 128
 MORPH_REUSE_EXPAND = 2
-EPOCHS = 2 # Reduced epochs for quicker CPU run
-BATCH_SIZE = 32 * SCALE_FACTOR # Reduced batch size for CPU memory
+EPOCHS = 5
+BATCH_SIZE = 128
 LR_BASELINE = 1e-3
 LR_MORPH_REUSE = 1e-3
-
+# LLM Consts
 PRETRAINED_NAME = "huawei-noah/TinyBERT_General_4L_312D"
 LLM_SEQ_LEN = 64
 MAX_SAMPLES = 1000
@@ -170,7 +169,7 @@ class MorphReuseLinearWrapperShared(nn.Module):
     """Shared bottleneck adapter with residual connection using SharedWeight"""
     def __init__(self, fin, fout):
         super().__init__()
-        self.core = nn.GELU() # Placeholder for potential core logic if needed differently
+        self.core = nn.Identity() # Placeholder for potential core logic if needed differently
         self.w = SharedWeight(fin, fout) # Use SharedWeight
 
     def forward(self, x):
@@ -835,8 +834,8 @@ def run_experiment(name):
 # ================== MAIN EXECUTION ==================
 if __name__ == "__main__":
     # Run experiments on all datasets
-    #datasets = ['MNIST', 'FashionMNIST', 'CIFAR10', 'sst2'] # Enable all datasets
-    datasets = ['sst2']
+    datasets = ['MNIST', 'FashionMNIST', 'CIFAR10', 'sst2'] # Enable all datasets
+    #datasets = ['sst2']
     for dataset in datasets:
         try:
             run_experiment(dataset)
