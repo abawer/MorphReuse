@@ -7,23 +7,52 @@
 
 ## Overview
 
-This repository explores **MorphReuse**, a method for reusing a **trainable core MLP** with **per-layer scaling** adapters, replacing conventional multi-layer networks with a shared, shaped transformation. The approach is benchmarked across:
 
-1. **Image Classification Networks**  
-   - Replacing MLP or classifier top layers with a shared MorphReuse core.  
-   - Includes both flat grayscale and convolutional color image inputs.
+This repository explores **MorphReuse**, an efficient parameter-sharing technique that replaces conventional network layers with a shared trainable core and per-layer scaling adapters. Key features:
 
-2. **LLM-based Text Classification**  
-   - Reusing shared weights across top layers of a frozen pretrained Transformer.  
-   - Applies to headless TinyBERT adapted for sentiment classification.
+- **Shared Core MLP**: Central trainable transformation module
+- **Per-Layer Scaling**: Learnable scaling factors for layer-specific adaptation
+- **Residual Connections**: Identity + scaled transformation for stable training
+- **CPU-Optimized**: Designed for accessible experimentation on standard hardware
 
+Benchmarked across vision and text tasks:
+- **Image Classification**: MNIST, FashionMNIST, CIFAR10
+- **Text Classification**: SST-2 sentiment analysis
 
 
 ## Method by Dataset
 
-We evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**—on three datasets: MNIST, CIFAR-10, and SST-2. Each method modifies which layers are trained or reused.
+We evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**—on three datasets: MNIST, FashionMNIST, CIFAR-10, and SST-2. Each method modifies which layers are trained or reused.
 
-### MNIST and FashionMNIST (Flat Grayscale 1×28×28 Images)
+
+### Image Classification (MNIST, FashionMNIST, CIFAR10)
+
+| Method       | Architecture                          | Trainable Components               |
+|--------------|---------------------------------------|------------------------------------|
+| **Baseline** | Full MLP/ConvNet                      | All parameters                     |
+| **MorphReuse**| Shared core + scaling adapters       | Core + adapters only (10-26% params)|
+| **LoRA**     | Low-Rank Adapters                     | Adapter matrices only (1-2% params)|
+
+**Key Implementation**:
+```python
+class MorphReuseCore(nn.Module):
+    def __init__(self, dim=128, expand=2.5):
+        super().__init__()
+        hidden = int(dim * expand)
+        self.net = nn.Sequential(
+            nn.Linear(dim, hidden),
+            nn.LayerNorm(hidden),
+            nn.GELU(),
+            nn.Linear(hidden, dim)
+        )
+        self.scale_param = nn.Parameter(torch.tensor([-3.0]))  # α-residual control
+
+    def forward(self, x):
+        identity = x
+        transformed = self.net(x)
+        scale = torch.sigmoid(self.scale_param) * 2  # [0,2] range
+        return identity + scale * transformed
+```
 
 **Baseline**  
 - Two-layer MLP classifier. All weights are trained end-to-end.
@@ -39,23 +68,32 @@ We evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA
 
 ### CIFAR-10 (RGB Images 3×32×32, Conv Backbone + Classifier MLP)
 
+Same MLP as above on top of a Convolutional Backbone net for feature extraction.
+
 **Baseline**  
 - Convolutional feature extractor followed by a fully connected MLP classifier.  
-- All layers are trainable.
+- All layers are trained.
 
 **MorphReuse**  
-- The convolutional extractor is frozen.  
+- The convolutional extractor backcbone is trained.
 - The classifier is replaced by two shared MorphReuse layers with scaling adapters.  
-- Only the shared core and adapters are trained.
+- Only the shared core and extractor backbone is trained, adaptor weights are frozen.
 
 **LoRA**  
-- Same conv backbone as baseline but frozen.  
+- The convolutional extractor backcbone is trained.
 - LoRA adapters are added to the classifier MLP.  
-- Only LoRA layers are trained.
+- Only LoRA layers are trained out of the MLP.
 
 
 
 ### SST-2 (Sentiment Classification, Pretrained TinyBERT)
+
+| Method       | Architecture                          | Trainable Components               |
+|--------------|---------------------------------------|------------------------------------|
+| **Baseline** | Pretrained TinyBERT                   | Three top layers                   |
+| **MorphReuse**| Pretrained TinyBERT + Surrogate Shared Weights for three top layers + Non-Linear activation       | Surrogate Weights|
+| **LoRA**     | Pretrained TinyBERT+Low-Rank Adapters for three top layer  | LoRA residual weights|
+
 
 **Baseline**  
 - Uses `huawei-noah/TinyBERT_General_4L_312D`.  
@@ -77,15 +115,8 @@ We evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA
 
 ## Comparative Results
 
-| Method      | Image Classification      | Text Classification (SST-2)          |
-|-------------|---------------------------|-------------------------------------|
-| Baseline    | Full MLP training         | Fine-tune top 3 LLM layers          |
-| MorphReuse  | Shared MLP core + frozen adapters| Surrogate shared weight for LLM heads |
-| LoRA        | LoRA adapters on MLP      | LoRA adapters on LLM heads           |
 
-
-
-## Colab Notebook Specs
+### Colab Notebook Specs
 ```
 OS: Linux-6.1.123+-x86_64-with-glibc2.35
 CPU: AMD EPYC 7B12 (2×2.25 GHz)
@@ -94,8 +125,6 @@ Python: 3.11.13
 PyTorch: 2.3.1+cpu
 Device: cpu
 ```
-
-## Sample Benchmarks
 
 ### 1. MNIST (MLP for 1×28×28)
 
