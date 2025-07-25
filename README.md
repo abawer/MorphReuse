@@ -1,5 +1,6 @@
 # MorphReuse
-MorphReuse: Shape-Level Weight Sharing with Per-Layer Scaling for lighter tuning
+**MorphReuse: Shaped Weight Sharing with Per-Layer Scaling for lighter computational networks**
+[![DOI](https://zenodo.org/badge/DOI/placeholder.svg)](https://zenodo.org)
 
 1) Image classification nets
 
@@ -9,7 +10,7 @@ Reusing trainable MLP core as a surrogate to a fully connected top layers
 
 1.b) Convolutional Image Case
 
-2) Linear LLM
+2) LLM layers
 
 Reusing shared weights along top layers of pretrained text LLM for a new task
 
@@ -55,7 +56,6 @@ Device: cpu
 
 5) SST2 (Text dataset for Headless Pretrained LLM)
 
-<img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/f9cec73f-187f-4881-933b-8f6cb60eec48" />
 
 
 
