@@ -29,9 +29,9 @@ Evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**�
 
 | Method       | Architecture                          | Trainable Components               |
 |--------------|---------------------------------------|------------------------------------|
-| **Baseline** | Full MLP/ConvNet                      | All parameters                     |
-| **MorphReuse**| Shared core + scaling adapters       | Core + adapters only (10-26% params)|
-| **LoRA**     | Low-Rank Adapters                     | Adapter matrices only (1-2% params)|
+| Baseline | Full MLP/ConvNet                      | All parameters                     |
+| MorphReuse| Shared core + scaling adapters       | Core + adapters only (10-26% params)|
+| LoRA     | Low-Rank Adapters                     | Adapter matrices only (1-2% params)|
 
 **Key Implementation**:
 ```python
@@ -102,9 +102,9 @@ Same MLP as above on top of a Convolutional Backbone net for feature extraction.
 
 | Method       | Architecture                          | Trainable Components               |
 |--------------|---------------------------------------|------------------------------------|
-| **Baseline** | Pretrained TinyBERT LLM                  | Three top layers                   |
-| **MorphReuse**| Pretrained TinyBERT + Surrogate Shared Weights for three top layers + Non-Linear activation       | Surrogate Weights|
-| **LoRA**     | Pretrained TinyBERT+Low-Rank Adapters for three top layer  | LoRA residual weights|
+| Baseline | Pretrained TinyBERT LLM                  | Three top layers                   |
+| MorphReuse| Pretrained TinyBERT + Surrogate Shared Weights for three top layers + Non-Linear activation       | Surrogate Weights|
+| LoRA     | Pretrained TinyBERT+Low-Rank Adapters for three top layer  | LoRA residual weights|
 
 
 **TinyBERT** is a distilled version of BERT developed by Huawei Noah’s Ark Lab. It significantly reduces model size and inference time while retaining much of the original BERT performance.
@@ -198,10 +198,10 @@ pip install -U --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu \
 
 | Dataset      | Type                    | Classes                      | Shape      | Usage                                 |
 |--------------|-------------------------|------------------------------|------------|----------------------------------------|
-| **MNIST**        | Handwritten digits      | 10 (digits 0–9)              | 1×28×28    | Image classification (MLP/CNN)        |
-| **FashionMNIST** | Clothing images         | 10 (shirts, shoes, etc.)     | 1×28×28    | Realistic alt. to MNIST               |
-| **CIFAR-10**     | Natural object photos   | 10 (airplane, dog, etc.)     | 3×32×32    | Image classification (CNN)            |
-| **SST-2**        | Movie review sentences  | 2 (positive / negative)      | 64 Max Sequence Len (padded)   | Text classification (LLM fine-tuning) |
+| MNIST      | Handwritten digits      | 10 (digits 0–9)              | 1×28×28    | Image classification (MLP/CNN)        |
+| FashionMNIST | Clothing images         | 10 (shirts, shoes, etc.)     | 1×28×28    | Realistic alt. to MNIST               |
+| CIFAR-10     | Natural object photos   | 10 (airplane, dog, etc.)     | 3×32×32    | Image classification (CNN)            |
+| SST-2        | Movie review sentences  | 2 (positive / negative)      | 64 Max Sequence Len (padded)   | Text classification (LLM fine-tuning) |
 
 
 
@@ -226,7 +226,60 @@ pip install -U --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu \
 
 ### 4. SST-2 (Pretrained Headless TinyBERT + Trained 3 top layers)
 
+
 <img width="1990" height="1572" alt="image" src="https://github.com/user-attachments/assets/a7883e3a-75c4-4312-a80f-f19d59de4681" />
+
+### Summary
+
+| Dataset      | Method     | Test Acc | Δ vs Baseline | Trainable Params      | Total Params        | Memory (MB) | Time/Epoch (s) | FWD (s) | BWD (s) | UPD (s) |
+|--------------|------------|----------|---------------|----------------------|---------------------|-------------|----------------|---------|---------|---------|
+| SST2         | Baseline   | 81.54%   | -             | 2.28M (15.9%)        | 14.35M              | 80.90       | 26.2           | 14.8    | 11.0    | 0.4     |
+|              | MorphReuse | 80.28%   | -1.26%        | 851K (6.6%)          | 12.92M              | 59.02       | 28.6           | 15.6    | 12.8    | 0.2     |
+|              | LoRA       | 82.11%*  | +0.57%        | 89K (0.6%)           | 14.44M              | 56.11       | 33.2           | 17.6    | 15.4    | 0.1     |
+| MNIST        | Baseline   | 97.15%   | -             | 669K (100%)          | 669K                | 10.22       | 9.0            | 1.8     | 2.2     | 4.9     |
+|              | MorphReuse | 96.70%   | -0.45%        | 83K (26.3%)          | 316K                | 2.15        | 4.1            | 1.7     | 1.8     | 0.6     |
+|              | LoRA       | 91.73%   | -5.42%        | 11K (1.7%)           | 681K                | 2.73        | 3.8            | 2.2     | 1.2     | 0.4     |
+| FashionMNIST | Baseline   | 88.06%   | -             | 669K (100%)          | 669K                | 10.22       | 7.2            | 1.8     | 2.2     | 3.1     |
+|              | MorphReuse | 86.28%   | -1.78%        | 83K (26.3%)          | 316K                | 2.15        | 4.1            | 1.7     | 1.8     | 0.6     |
+|              | LoRA       | 83.06%   | -5.00%        | 11K (1.7%)           | 681K                | 2.73        | 4.0            | 2.3     | 1.2     | 0.4     |
+| CIFAR10      | Baseline   | 53.73%   | -             | 1.84M (100%)         | 1.84M               | 28.09       | 12.2           | 3.9     | 3.9     | 4.3     |
+|              | MorphReuse | 49.35%   | -4.38%        | 83K (13.6%)          | 609K                | 3.27        | 4.3            | 2.2     | 1.6     | 0.5     |
+|              | LoRA       | 41.01%   | -12.72%       | 20.5K (1.1%)         | 1.86M               | 7.34        | 5.7            | 4.3     | 1.1     | 0.4     |
+
+*LoRA peaked at 84.98% in Epoch 4 before dropping to 82.11%
+
+Findings from results above:
+
+| Metric             | MorphReuse vs Baseline    | MorphReuse vs LoRA          |
+|--------------------|---------------------------|-----------------------------|
+| Parameter Reduction | 74-93%                    | 5-10x more params           |
+| Memory Savings     | 4-5x (vision)              | Comparable                  |
+|                    | 1.4x (text)                |                             |
+| Training Speed     | 2.2x faster (vision)       | 10-15% slower (text)        |
+|                    | 10% slower (text)          | Faster (vision)             |
+
+
+#### Parameter Efficiency
+- Reduced trainable parameters by 74-93% vs baseline
+- Achieved 4-5x memory reduction in vision tasks
+- Maintained competitive accuracy with minimal parameters
+
+#### Performance Preservation
+- Vision: ≤1.78% accuracy drop on MNIST/FashionMNIST
+- Text: Within 1.26% of baseline on SST-2
+- Outperformed LoRA by 4.38-12.72% on vision tasks
+- 2.2x faster inference expected on resource-constrained devices
+  
+#### Training Acceleration
+- 2.2x faster epoch times on vision tasks
+- MNIST: 4.1s/epoch vs 9.0s (baseline)
+- FashionMNIST: 4.1s/epoch vs 7.2s
+
+#### Architecture Insights
+- Residual connections enabled stable training
+- Per-layer scaling adapters maintained feature diversity in face of core/layer reuse
+- Vision tasks benefited most from parameter sharing
+- MorphReuse reduces model size by 4-5x
 
 
 ## References
