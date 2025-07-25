@@ -1,8 +1,15 @@
+# Copyright 2025 Amit Bawer
+# Licensed under the Apache License, Version 2.0
+# http://www.apache.org/licenses/LICENSE-2.0 
+
+
 # ========================================================
-# Colab MorphReuse demo (Baseline vs MorphReuse vs LoRA) - WITH LLM MorphReuse
-# For CPU-ONLY EXECUTION
+# Colab MorphReuse demo (Baseline vs MorphReuse vs LoRA)
+#
+# FOR CPU-ONLY EXECUTION
 #
 # Run first:
+#
 # pip install -U --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu \
 #   -f https://download.pytorch.org/whl/torch_stable.html \
 #   "datasets<2.19" transformers "peft<0.7.0" huggingface_hub fsspec accelerate
@@ -35,7 +42,7 @@ DEVICE = torch.device("cpu") # Explicitly use CPU
 print(f"Using device: {DEVICE}")
 # =======================================================
 
-# ========== CPU-FRIENDLY HYPERPARAMETERS ===============
+# ========== HYPERPARAMETERS ============================
 # Vision / Global Consts
 WIDTH = 512
 MORPH_REUSE_DIM = 128
@@ -582,9 +589,8 @@ def train(model, train_loader, test_loader, lr, tag):
     # Filter parameters that require gradients
     trainable_params = list(filter(lambda p: p.requires_grad, model.parameters()))
     if not trainable_params:
-        print(f"[{tag}] Warning: No trainable parameters found!")
-        # Create a dummy optimizer with no params if needed, or handle gracefully
-        # For simplicity here, we proceed but optimizer might be empty
+        raise Exception(f"[{tag}] Warning: No trainable parameters found!")
+
     optimizer = optim.Adam(trainable_params, lr=lr)
     criterion = nn.CrossEntropyLoss()
 
@@ -829,13 +835,11 @@ def run_experiment(name):
     # Cleanup
     del baseline, morph_reuse_model, lora_model
     gc.collect()
-    # torch.cuda.empty_cache() # Not needed for CPU
 
 # ================== MAIN EXECUTION ==================
 if __name__ == "__main__":
     # Run experiments on all datasets
     datasets = ['MNIST', 'FashionMNIST', 'CIFAR10', 'sst2'] # Enable all datasets
-    #datasets = ['sst2']
     for dataset in datasets:
         try:
             run_experiment(dataset)
