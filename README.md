@@ -65,13 +65,14 @@ class MorphReuseAdapter(nn.Module):
     def forward(self, x):
         return self.out_proj(self.core(self.in_proj(x)))
 ```
+#### MNIST / FashionMNIST (MLP for flatten 1x28x28 images)
 
 **Baseline**  
 - Two-layer MLP classifier. All weights are trained end-to-end.
 
 **MorphReuse**  
 - Both MLP layers are replaced with a shared MLP core and per-layer scaling adapters.  
-- Outer wrappers are frozen; only the core and adapters are trained.
+- Outer wrappers are frozen; only the core weights are trained.
 
 **LoRA**  
 - Injects LoRA adapters into each `nn.Linear`.  
