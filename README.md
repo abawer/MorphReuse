@@ -161,6 +161,13 @@ PyTorch: 2.3.1+cpu
 Device: cpu
 ```
 
+### Prerequisits
+```
+pip install -U --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu \
+   -f https://download.pytorch.org/whl/torch_stable.html \
+   "datasets<2.19" transformers "peft<0.7.0" huggingface_hub fsspec accelerate
+```
+
 ### 1. MNIST (MLP for 1×28×28)
 
 ![MNIST](https://github.com/user-attachments/assets/cad4d968-fb9c-4e25-97fd-1e5d548e65f1)
