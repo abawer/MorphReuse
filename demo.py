@@ -175,7 +175,7 @@ class MorphReuseAdapter(nn.Module):
         return self.out_proj(self.core(self.in_proj(x)))
 
 # Simplified MorphReuse wrapper for shared weights
-class MorphReuseLinearWrapperShared(nn.Module):
+class MorphReuseWrapper(nn.Module):
     def __init__(self, fin, fout):
         super().__init__()
         self.core = nn.GELU()
@@ -528,7 +528,7 @@ def build_llm_morph_reuse():
     # 2. Wrap the chosen layers with TMM adapters (unchanged)
     SharedWeight.reset()
     def wrap_layer(original):
-        wrapper = MorphReuseLinearWrapperShared(
+        wrapper = MorphReuseWrapper(
             original.in_features, 
             original.out_features
         )
