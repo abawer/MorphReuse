@@ -22,7 +22,7 @@ Benchmarked across vision and text tasks:
 
 ## Method by Dataset
 
-Evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**—on three datasets: MNIST, FashionMNIST, CIFAR-10, and SST-2. Each method modifies which layers are trained or reused.
+Evaluate three training strategies—**Baseline**, **MorphReuse**, and **LoRA**—over four datasets: MNIST, FashionMNIST, CIFAR-10, and SST-2. Each method modifies which layers are trained or reused.
 
 
 ### Image Classification (MNIST, FashionMNIST, CIFAR10)
@@ -88,12 +88,12 @@ Same MLP as above on top of a Convolutional Backbone net for feature extraction.
 - All layers are trained.
 
 **MorphReuse**  
-- The convolutional extractor backcbone is trained.
+- The convolutional extractor backbone is trained.
 - The classifier is replaced by two shared MorphReuse layers with scaling adapters.  
 - Only the shared core and extractor backbone is trained, adaptor weights are frozen.
 
 **LoRA**  
-- The convolutional extractor backcbone is trained.
+- The convolutional extractor backbone is trained.
 - LoRA adapters are added to the classifier MLP.  
 - Only LoRA layers are trained out of the MLP.
 
@@ -124,7 +124,7 @@ In this project, TinyBERT is used as a frozen LLM backbone for SST-2 sentiment c
 ```python
 
 # Simplified MorphReuse wrapper for shared weights
-class MorphReuseLinearWrapperShared(nn.Module):
+class MorphReuseWrapper(nn.Module):
     def __init__(self, fin, fout):
         super().__init__()
         self.core = nn.GELU()
@@ -162,10 +162,9 @@ class SharedWeight(nn.Module):
 - All unfrozen parts are trainable.
 
 **MorphReuse**  
-- All encoder layers are frozen.  
+- All encoder layers are frozen, except for three last layers.  
 - The top 2 layers and classifier are wrapped with `MorphReuseLinearWrapperShared`.  
-- Shared core is used across `q`, `k`, `v`, intermediate, output, and classifier projections.  
-- Only the core and adapters are trained.
+- Shared weights with trainable scaling per layer are used across `q`, `k`, `v`, intermediate, output, and classifier projections.  
 
 **LoRA**  
 - Applies LoRA to top 2 layers and classifier.  
@@ -180,7 +179,7 @@ class SharedWeight(nn.Module):
 ### Colab Notebook Specs
 ```
 OS: Linux-6.1.123+-x86_64-with-glibc2.35
-CPU: AMD EPYC 7B12 (2×2.25 GHz)
+CPU: Intel(R) Xeon(R) CPU @ 2.20GHz (2×2.20 GHz)
 RAM: 12977 MB
 Python: 3.11.13
 PyTorch: 2.3.1+cpu
